@@ -1,42 +1,641 @@
 openapi: 3.0.3
 info:
   title: URL Shortener API
-  version: 0.1.0
-  description: Part 1 infrastructure scaffold. Link operations will be designed in part 2 before implementation.
+  version: 0.2.0
+  description: |
+    Design-first contract for laboratory work 6. Link operations are designed
+    in part 2 and will be implemented in part 3. Only /health and Swagger UI
+    are implemented in the part 1 scaffold. Swagger UI at /docs/ reads this
+    file; its HTML and assets are outside the business API.
+
+    All operations are public. Business responses use Cache-Control: no-store,
+    including errors. JSON responses may include charset=utf-8. HEAD responses,
+    204 responses and successful redirects have no body.
+
+    Query parameters are allowed only on GET /api/links; unknown or repeated
+    parameters on business operations return 400. Numeric query values must
+    be unsigned decimal integers without leading zeroes (except offset=0).
+    The infrastructure /health endpoint ignores additional query parameters.
+
+    POST and PATCH accept only application/json (optionally charset=utf-8),
+    with no Content-Encoding other than identity, up to 16384 bytes. Media
+    type/encoding are checked first, then size, JSON syntax, field and parameter
+    validation, then business rules and SQL. Missing or empty JSON bodies,
+    unknown fields, null values and read-only input fields return 400.
+    GET, HEAD and DELETE have no request body semantics; bodies are ignored.
+
+    Unknown paths outside /docs return 404 with the Error schema and
+    error.code=NOT_FOUND. Unsupported methods on known business paths return
+    405 with Error, error.code=METHOD_NOT_ALLOWED and an Allow header:
+    /api/links allows GET, POST; /api/links/{code} allows GET, PATCH, DELETE;
+    /r/{code} allows GET, HEAD. Error responses to HEAD have no body.
+    Infrastructure HEAD/OPTIONS behavior outside business paths is supplied
+    by Express. Errors never expose passwords, SQL or stack traces.
+  contact:
+    name: URL Shortener API repository
+    url: https://github.com/MyRuicH/URL-Shortener-API
+servers:
+  - url: /
+    description: Current origin (locally http://localhost:8080)
+security: []
+tags:
+  - name: Links
+    description: Create, inspect, update and delete shortened links
+  - name: Redirects
+    description: Resolve short codes and count GET requests
+  - name: Infrastructure
+    description: Check server and PostgreSQL readiness
 paths:
-  /health:
-    get:
-      operationId: checkHealth
-      summary: Check server and database readiness
+  /api/links:
+    post:
+      tags: [Links]
+      operationId: createLink
+      summary: Create a shortened link
+      description: |
+        A repeated originalUrl creates an independent resource. An explicit
+        alias is case-sensitive and must be unique; an occupied alias returns
+        409 even for the same URL. Without alias the server generates 8 random
+        base64url characters using crypto.randomBytes(6). The UNIQUE constraint
+        resolves races. Generated-code collisions are retried up to 5 attempts,
+        then return 500. A new link has clicks="0". Location identifies its
+        metadata resource; shortUrl contains the redirect URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLink'
+            examples:
+              generated:
+                summary: Let the server generate a code
+                value:
+                  originalUrl: https://example.org/articles/express
+              custom:
+                summary: Request a custom alias
+                value:
+                  originalUrl: https://example.org/articles/express
+                  alias: express6
       responses:
-        '200':
-          description: Server and PostgreSQL are available
+        '201':
+          description: Link created
+          headers:
+            Location:
+              description: Relative URI of the new metadata resource
+              required: true
+              schema:
+                type: string
+                pattern: '^/api/links/[A-Za-z0-9_-]{4,32}$'
+                example: /api/links/express6
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health'
+                $ref: '#/components/schemas/Link'
+              example:
+                code: express6
+                originalUrl: https://example.org/articles/express
+                shortUrl: http://localhost:8080/r/express6
+                createdAt: '2026-11-24T12:00:00.000Z'
+                clicks: '0'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/AliasConflict'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    get:
+      tags: [Links]
+      operationId: listLinks
+      summary: List shortened links
+      description: |
+        Ordered by created_at DESC, id DESC. Items and total use the same
+        database snapshot. An offset beyond the last row returns empty items.
+        Reads do not change clicks. Changes between requests can shift pages.
+        Only limit and offset are supported, once each. Invalid, repeated or
+        unknown query parameters return 400.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Maximum links to return, a canonical decimal integer
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Links to skip, a canonical decimal integer
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 2147483647
+            default: 0
+          example: 0
+      responses:
+        '200':
+          description: A page of links, including an empty page
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkList'
+              examples:
+                populated:
+                  value:
+                    items:
+                      - code: express6
+                        originalUrl: https://example.org/articles/express
+                        shortUrl: http://localhost:8080/r/express6
+                        createdAt: '2026-11-24T12:00:00.000Z'
+                        clicks: '3'
+                    limit: 20
+                    offset: 0
+                    total: '1'
+                empty:
+                  value:
+                    items: []
+                    limit: 20
+                    offset: 0
+                    total: '0'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/links/{code}:
+    parameters:
+      - $ref: '#/components/parameters/Code'
+    get:
+      tags: [Links]
+      operationId: getLink
+      summary: Get link metadata
+      description: Returns the link without increasing clicks. No query parameters are supported.
+      responses:
+        '200':
+          description: Link found
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    patch:
+      tags: [Links]
+      operationId: updateLink
+      summary: Change the destination URL
+      description: |
+        Only originalUrl changes. Code, createdAt and clicks are preserved.
+        Updating to the existing URL is allowed and returns 200. Alias cannot
+        be changed. Query parameters are not supported.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLink'
+            example:
+              originalUrl: https://example.org/articles/express-updated
+      responses:
+        '200':
+          description: Updated link
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+              example:
+                code: express6
+                originalUrl: https://example.org/articles/express-updated
+                shortUrl: http://localhost:8080/r/express6
+                createdAt: '2026-11-24T12:00:00.000Z'
+                clicks: '3'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    delete:
+      tags: [Links]
+      operationId: deleteLink
+      summary: Delete a shortened link
+      description: |
+        Deletes the link and its counter. Deleting an absent or already deleted
+        code returns 404. Query parameters are not supported.
+      responses:
+        '204':
+          description: Link deleted; no response body
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /r/{code}:
+    parameters:
+      - $ref: '#/components/parameters/Code'
+    get:
+      tags: [Redirects]
+      operationId: redirectLink
+      summary: Redirect to the destination and count the request
+      description: |
+        Atomically increases clicks by 1 and retrieves the current destination
+        using UPDATE ... RETURNING before sending 302. Database failure does not
+        redirect. Counts include bots and repeated requests; they measure handled
+        GETs, not unique users or completed visits. No-store prevents compliant
+        caches from reusing redirects. Query parameters are not supported and
+        are not appended to the destination.
+      responses:
+        '302':
+          $ref: '#/components/responses/Redirect'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    head:
+      tags: [Redirects]
+      operationId: inspectRedirect
+      summary: Inspect a destination without increasing clicks
+      description: |
+        Returns the same redirect headers as GET without changing clicks.
+        Must be handled separately from Express's automatic HEAD-to-GET fallback.
+        All responses, including errors, have no body. Query parameters are not
+        supported. Error meanings match GET /r/{code}.
+      responses:
+        '302':
+          $ref: '#/components/responses/Redirect'
+        '400':
+          description: BAD_REQUEST; invalid code or unsupported query; no body
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '404':
+          description: NOT_FOUND; the code does not exist; no body
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '500':
+          description: INTERNAL_ERROR; unexpected server error; no body
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '503':
+          description: SERVICE_UNAVAILABLE; PostgreSQL unavailable or timed out; no body
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+  /health:
+    get:
+      tags: [Infrastructure]
+      operationId: checkHealth
+      summary: Check server and PostgreSQL readiness
+      description: |
+        Executes SELECT 1 through pg-promise. Preserves the part 1 health contract.
+        Any failed database check returns 503. Additional query parameters are ignored.
+      responses:
+        '200':
+          description: Server and PostgreSQL are available
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthUp'
               example:
                 status: ok
                 database: up
         '503':
-          description: PostgreSQL is unavailable
+          description: PostgreSQL is unavailable or the database check failed
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health'
+                $ref: '#/components/schemas/HealthDown'
               example:
                 status: error
                 database: down
 components:
+  parameters:
+    Code:
+      name: code
+      in: path
+      required: true
+      description: Case-sensitive code, validated after URL decoding; malformed code returns 400
+      schema:
+        $ref: '#/components/schemas/Code'
+      example: express6
+  headers:
+    NoStore:
+      description: Prevent caching of metadata, readiness results and mutable redirects
+      required: true
+      schema:
+        type: string
+        enum: [no-store]
+      example: no-store
   schemas:
-    Health:
+    Code:
+      type: string
+      minLength: 4
+      maxLength: 32
+      pattern: '^[A-Za-z0-9_-]{4,32}$'
+      description: ASCII letters, digits, underscore or hyphen; case-sensitive
+      example: express6
+    DestinationUrl:
+      type: string
+      format: uri
+      minLength: 1
+      maxLength: 2048
+      pattern: '^https?://[^\u0000-\u0020\u007f\\]+$'
+      description: |
+        Absolute URI with lowercase http or https scheme and a nonempty hostname.
+        Credentials (username/password), raw whitespace, control characters and
+        backslashes are forbidden. Must also pass WHATWG URL parsing. The server
+        stores new URL(value).href; normalized length must also be <=2048.
+        Query and fragment are preserved. Localhost and IP addresses are allowed.
+        No fetching or DNS/reachability checks are performed.
+        Example normalization: https://example.org becomes https://example.org/.
+      example: https://example.org/articles/express
+    CreateLink:
+      type: object
+      additionalProperties: false
+      required: [originalUrl]
+      properties:
+        originalUrl:
+          $ref: '#/components/schemas/DestinationUrl'
+        alias:
+          $ref: '#/components/schemas/Code'
+    UpdateLink:
+      type: object
+      additionalProperties: false
+      required: [originalUrl]
+      properties:
+        originalUrl:
+          $ref: '#/components/schemas/DestinationUrl'
+    DecimalCounter:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)$'
+      description: Nonnegative decimal integer string; avoids precision loss for PostgreSQL BIGINT
+      example: '0'
+    Link:
+      type: object
+      additionalProperties: false
+      required: [code, originalUrl, shortUrl, createdAt, clicks]
+      properties:
+        code:
+          type: string
+          readOnly: true
+          minLength: 4
+          maxLength: 32
+          pattern: '^[A-Za-z0-9_-]{4,32}$'
+          example: express6
+        originalUrl:
+          readOnly: true
+          allOf:
+            - $ref: '#/components/schemas/DestinationUrl'
+        shortUrl:
+          type: string
+          format: uri
+          readOnly: true
+          description: |
+            PUBLIC_BASE_URL + /r/ + code. The configured base URL has no trailing
+            slash and defaults to http://localhost:8080. Never derived from an
+            untrusted Host header. Code is immutable after creation.
+          example: http://localhost:8080/r/express6
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Creation time in UTC (RFC 3339); never changed by PATCH
+          example: '2026-11-24T12:00:00.000Z'
+        clicks:
+          readOnly: true
+          allOf:
+            - $ref: '#/components/schemas/DecimalCounter'
+      example:
+        code: express6
+        originalUrl: https://example.org/articles/express
+        shortUrl: http://localhost:8080/r/express6
+        createdAt: '2026-11-24T12:00:00.000Z'
+        clicks: '3'
+    LinkList:
+      type: object
+      additionalProperties: false
+      required: [items, limit, offset, total]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          description: At most limit entries in created_at DESC, id DESC order
+          items:
+            $ref: '#/components/schemas/Link'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+        offset:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+          example: 0
+        total:
+          allOf:
+            - $ref: '#/components/schemas/DecimalCounter'
+          description: Total number of links before pagination, from the same snapshot as items
+          example: '1'
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - BAD_REQUEST
+                - NOT_FOUND
+                - METHOD_NOT_ALLOWED
+                - ALIAS_CONFLICT
+                - PAYLOAD_TOO_LARGE
+                - UNSUPPORTED_MEDIA_TYPE
+                - INTERNAL_ERROR
+                - SERVICE_UNAVAILABLE
+            message:
+              type: string
+              minLength: 1
+              description: Human-readable explanation; wording is not stable for client logic
+      example:
+        error:
+          code: BAD_REQUEST
+          message: originalUrl must be an absolute HTTP or HTTPS URL.
+    HealthUp:
       type: object
       additionalProperties: false
       required: [status, database]
       properties:
         status:
           type: string
-          enum: [ok, error]
+          enum: [ok]
         database:
           type: string
-          enum: [up, down]
+          enum: [up]
+    HealthDown:
+      type: object
+      additionalProperties: false
+      required: [status, database]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        database:
+          type: string
+          enum: [down]
+  responses:
+    BadRequest:
+      description: BAD_REQUEST; invalid JSON, missing/unknown field, URL, alias, code or query
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: BAD_REQUEST
+              message: originalUrl must be an absolute HTTP or HTTPS URL.
+    NotFound:
+      description: NOT_FOUND; a valid code has no existing link
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Link not found.
+    AliasConflict:
+      description: ALIAS_CONFLICT; the requested alias already exists
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: ALIAS_CONFLICT
+              message: The requested alias is already in use.
+    PayloadTooLarge:
+      description: PAYLOAD_TOO_LARGE; the request body exceeds 16384 bytes
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: PAYLOAD_TOO_LARGE
+              message: Request body must not exceed 16384 bytes.
+    UnsupportedMediaType:
+      description: UNSUPPORTED_MEDIA_TYPE; missing/unsupported Content-Type, charset or Content-Encoding
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNSUPPORTED_MEDIA_TYPE
+              message: Use application/json with UTF-8 and no content encoding.
+    InternalError:
+      description: INTERNAL_ERROR; unexpected server/SQL failure or generated-code retry exhaustion
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: An unexpected server error occurred.
+    ServiceUnavailable:
+      description: SERVICE_UNAVAILABLE; PostgreSQL is unreachable or database access timed out
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: SERVICE_UNAVAILABLE
+              message: The database is temporarily unavailable.
+    Redirect:
+      description: Temporary redirect to the current originalUrl; no response body
+      headers:
+        Location:
+          description: Absolute normalized destination URL
+          required: true
+          schema:
+            $ref: '#/components/schemas/DestinationUrl'
+          example: https://example.org/articles/express
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'

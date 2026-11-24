@@ -11,7 +11,8 @@
   "scripts": {
     "start": "node main.js",
     "dev": "node --watch main.js",
-    "check": "node --check main.js && node --check src/config.js && node --check src/db.js && node --check src/app.js && node --check scripts/healthcheck.js"
+    "check": "node --check main.js && node --check src/config.js && node --check src/db.js && node --check src/app.js && node --check scripts/healthcheck.js",
+    "lint:api": "redocly lint openapi.yaml"
   },
   "dependencies": {
     "commander": "^15.1.0",
@@ -20,5 +21,8 @@
     "js-yaml": "^5.5.0",
     "pg-promise": "^12.8.0",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.83.0"
   }
 }
