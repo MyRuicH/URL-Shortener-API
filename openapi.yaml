@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener API
+  version: 0.1.0
+  description: Part 1 infrastructure scaffold. Link operations will be designed in part 2 before implementation.
+paths:
+  /health:
+    get:
+      operationId: checkHealth
+      summary: Check server and database readiness
+      responses:
+        '200':
+          description: Server and PostgreSQL are available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+                database: up
+        '503':
+          description: PostgreSQL is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: error
+                database: down
+components:
+  schemas:
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, database]
+      properties:
+        status:
+          type: string
+          enum: [ok, error]
+        database:
+          type: string
+          enum: [up, down]

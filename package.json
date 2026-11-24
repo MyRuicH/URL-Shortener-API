@@ -1,0 +1,24 @@
+{
+  "name": "url-shortener-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Express.js URL shortener — laboratory work 6",
+  "type": "module",
+  "main": "main.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "dev": "node --watch main.js",
+    "check": "node --check main.js && node --check src/config.js && node --check src/db.js && node --check src/app.js && node --check scripts/healthcheck.js"
+  },
+  "dependencies": {
+    "commander": "^15.1.0",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "js-yaml": "^5.5.0",
+    "pg-promise": "^12.8.0",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
