@@ -1,0 +1,657 @@
+{
+  "results": [
+    {
+      "label": "health",
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "label": "create",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 201
+    },
+    {
+      "label": "create",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 201
+    },
+    {
+      "label": "reuse",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 200
+    },
+    {
+      "label": "alias conflict",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 409
+    },
+    {
+      "label": "metadata",
+      "method": "GET",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 200
+    },
+    {
+      "label": "HEAD does not count",
+      "method": "HEAD",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "HEAD counter",
+      "method": "GET",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 200
+    },
+    {
+      "label": "redirect headers",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "PATCH preserves fields",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 200
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "concurrent click",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias",
+      "status": 302
+    },
+    {
+      "label": "no lost clicks",
+      "method": "GET",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 200
+    },
+    {
+      "label": "pagination",
+      "method": "GET",
+      "path": "/api/links?limit=1&offset=0",
+      "status": 200
+    },
+    {
+      "label": "empty page",
+      "method": "GET",
+      "path": "/api/links?offset=2147483647",
+      "status": 200
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?limit=01",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?limit=0",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?limit=101",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?offset=-1",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?offset=2147483648",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?limit=1&limit=2",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?other=1",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?limit=1e1",
+      "status": 400
+    },
+    {
+      "label": "bad query",
+      "method": "GET",
+      "path": "/api/links?offset=0.0",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad object",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad URL",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad JSON",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "bad JSON",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 400
+    },
+    {
+      "label": "oversize",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 413
+    },
+    {
+      "label": "bad media type",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 415
+    },
+    {
+      "label": "bad media type",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 415
+    },
+    {
+      "label": "encoding precedes JSON",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 415
+    },
+    {
+      "label": "bad JSON",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 400
+    },
+    {
+      "label": "bad JSON",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 400
+    },
+    {
+      "label": "oversize",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 413
+    },
+    {
+      "label": "bad media type",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 415
+    },
+    {
+      "label": "bad media type",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 415
+    },
+    {
+      "label": "encoding precedes JSON",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 415
+    },
+    {
+      "label": "unknown query",
+      "method": "GET",
+      "path": "/api/links/vmwuxbvyralias?other=1",
+      "status": 400
+    },
+    {
+      "label": "invalid code",
+      "method": "GET",
+      "path": "/api/links/bad!",
+      "status": 400
+    },
+    {
+      "label": "missing code",
+      "method": "GET",
+      "path": "/api/links/vmwuxbvyrmissing",
+      "status": 404
+    },
+    {
+      "label": "unknown query",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyralias?other=1",
+      "status": 400
+    },
+    {
+      "label": "invalid code",
+      "method": "PATCH",
+      "path": "/api/links/bad!",
+      "status": 400
+    },
+    {
+      "label": "missing code",
+      "method": "PATCH",
+      "path": "/api/links/vmwuxbvyrmissing",
+      "status": 404
+    },
+    {
+      "label": "unknown query",
+      "method": "DELETE",
+      "path": "/api/links/vmwuxbvyralias?other=1",
+      "status": 400
+    },
+    {
+      "label": "invalid code",
+      "method": "DELETE",
+      "path": "/api/links/bad!",
+      "status": 400
+    },
+    {
+      "label": "missing code",
+      "method": "DELETE",
+      "path": "/api/links/vmwuxbvyrmissing",
+      "status": 404
+    },
+    {
+      "label": "unknown query",
+      "method": "GET",
+      "path": "/r/vmwuxbvyralias?other=1",
+      "status": 400
+    },
+    {
+      "label": "invalid code",
+      "method": "GET",
+      "path": "/r/bad!",
+      "status": 400
+    },
+    {
+      "label": "missing code",
+      "method": "GET",
+      "path": "/r/vmwuxbvyrmissing",
+      "status": 404
+    },
+    {
+      "label": "unknown query",
+      "method": "HEAD",
+      "path": "/r/vmwuxbvyralias?other=1",
+      "status": 400
+    },
+    {
+      "label": "invalid code",
+      "method": "HEAD",
+      "path": "/r/bad!",
+      "status": 400
+    },
+    {
+      "label": "missing code",
+      "method": "HEAD",
+      "path": "/r/vmwuxbvyrmissing",
+      "status": 404
+    },
+    {
+      "label": "Allow",
+      "method": "PUT",
+      "path": "/api/links",
+      "status": 405
+    },
+    {
+      "label": "Allow",
+      "method": "PUT",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 405
+    },
+    {
+      "label": "Allow",
+      "method": "PUT",
+      "path": "/r/vmwuxbvyralias",
+      "status": 405
+    },
+    {
+      "label": "no automatic HEAD metadata",
+      "method": "HEAD",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 405
+    },
+    {
+      "label": "unknown path",
+      "method": "GET",
+      "path": "/missing-lab6",
+      "status": 404
+    },
+    {
+      "label": "malformed path",
+      "method": "GET",
+      "path": "/r/%ZZ",
+      "status": 400
+    },
+    {
+      "label": "delete",
+      "method": "DELETE",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 204
+    },
+    {
+      "label": "delete twice",
+      "method": "DELETE",
+      "path": "/api/links/vmwuxbvyralias",
+      "status": 404
+    },
+    {
+      "label": "SQL failure",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "GET",
+      "path": "/api/links",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "GET",
+      "path": "/api/links/lab6ui",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "PATCH",
+      "path": "/api/links/lab6ui",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "DELETE",
+      "path": "/api/links/lab6ui",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "GET",
+      "path": "/r/lab6ui",
+      "status": 500
+    },
+    {
+      "label": "SQL failure",
+      "method": "HEAD",
+      "path": "/r/lab6ui",
+      "status": 500
+    },
+    {
+      "label": "database stopped",
+      "method": "POST",
+      "path": "/api/links",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "GET",
+      "path": "/api/links",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "GET",
+      "path": "/api/links/lab6ui",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "PATCH",
+      "path": "/api/links/lab6ui",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "DELETE",
+      "path": "/api/links/lab6ui",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "GET",
+      "path": "/r/lab6ui",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "HEAD",
+      "path": "/r/lab6ui",
+      "status": 503
+    },
+    {
+      "label": "database stopped",
+      "method": "GET",
+      "path": "/health",
+      "status": 503
+    },
+    {
+      "label": "recovered",
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "label": "after down/up",
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "label": "all rows and counters survive docker compose down/up",
+      "status": "PASS"
+    }
+  ],
+  "passed": 109
+}

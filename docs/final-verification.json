@@ -1,0 +1,150 @@
+{
+  "passed": 10,
+  "retainedSampleCode": "LgVdCq7A",
+  "results": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "status": 200,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "status": "ok",
+        "database": "up"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/links",
+      "status": 201,
+      "cacheControl": "no-store",
+      "location": "/api/links/LgVdCq7A",
+      "body": {
+        "code": "LgVdCq7A",
+        "originalUrl": "https://example.org/lab6-final-1795538954203",
+        "createdAt": "2026-11-24T16:49:08.472Z",
+        "clicks": "0",
+        "shortUrl": "http://localhost:8080/r/LgVdCq7A"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/links",
+      "status": 200,
+      "cacheControl": "no-store",
+      "location": "/api/links/LgVdCq7A",
+      "body": {
+        "code": "LgVdCq7A",
+        "originalUrl": "https://example.org/lab6-final-1795538954203",
+        "createdAt": "2026-11-24T16:49:08.472Z",
+        "clicks": "0",
+        "shortUrl": "http://localhost:8080/r/LgVdCq7A"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/r/LgVdCq7A",
+      "status": 302,
+      "cacheControl": "no-store",
+      "location": "https://example.org/lab6-final-1795538954203",
+      "body": null
+    },
+    {
+      "method": "HEAD",
+      "path": "/r/LgVdCq7A",
+      "status": 302,
+      "cacheControl": "no-store",
+      "location": "https://example.org/lab6-final-1795538954203",
+      "body": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/links/LgVdCq7A",
+      "status": 200,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "code": "LgVdCq7A",
+        "originalUrl": "https://example.org/lab6-final-1795538954203",
+        "createdAt": "2026-11-24T16:49:08.472Z",
+        "clicks": "1",
+        "shortUrl": "http://localhost:8080/r/LgVdCq7A"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/links/LgVdCq7A",
+      "status": 200,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "code": "LgVdCq7A",
+        "originalUrl": "https://example.org/lab6-final-updated",
+        "createdAt": "2026-11-24T16:49:08.472Z",
+        "clicks": "1",
+        "shortUrl": "http://localhost:8080/r/LgVdCq7A"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/links?limit=20&offset=0",
+      "status": 200,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "items": [
+          {
+            "code": "LgVdCq7A",
+            "originalUrl": "https://example.org/lab6-final-updated",
+            "createdAt": "2026-11-24T16:49:08.472Z",
+            "clicks": "1",
+            "shortUrl": "http://localhost:8080/r/LgVdCq7A"
+          },
+          {
+            "code": "knLNI4eO",
+            "originalUrl": "https://example.org/generated-lab6",
+            "createdAt": "2026-11-24T16:38:41.674Z",
+            "clicks": "0",
+            "shortUrl": "http://localhost:8080/r/knLNI4eO"
+          },
+          {
+            "code": "lab6ui",
+            "originalUrl": "http://localhost:8080/health?updated=1",
+            "createdAt": "2026-11-24T16:38:13.973Z",
+            "clicks": "1",
+            "shortUrl": "http://localhost:8080/r/lab6ui"
+          }
+        ],
+        "limit": 20,
+        "offset": 0,
+        "total": "3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/links/lab6missing",
+      "status": 404,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Link not found."
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/links",
+      "status": 415,
+      "cacheControl": "no-store",
+      "location": null,
+      "body": {
+        "error": {
+          "code": "UNSUPPORTED_MEDIA_TYPE",
+          "message": "Use application/json with UTF-8 and no content encoding."
+        }
+      }
+    }
+  ]
+}
