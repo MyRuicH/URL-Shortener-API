@@ -18,25 +18,44 @@ function link(row) {
 
 // Серіалізує створення однакового URL; UNIQUE остаточно захищає код від колізій.
 export async function createLink(originalUrl, alias, generateCode) {
-  return db.tx(async function createTransaction(transaction) {
-    await transaction.none('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [originalUrl]);
-    if (alias === undefined) {
-      const existing = await transaction.oneOrNone(
-        'SELECT * FROM links WHERE original_url = $1 ORDER BY created_at, id LIMIT 1', [originalUrl],
-      );
-      if (existing) return { item: link(existing), created: false };
+  // Явна транзакція дозволяє працювати лише через await, без callback у db.tx.
+  const transaction = await db.connect();
+  try {
+    await transaction.none('BEGIN');
+    const result = await insertLink(transaction, originalUrl, alias, generateCode);
+    await transaction.none('COMMIT');
+    return result;
+  } catch (error) {
+    try {
+      await transaction.none('ROLLBACK');
+    } catch {
+      // Початкова помилка має пріоритет, якщо з'єднання вже обірвалося.
     }
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const code = alias ?? await generateCode();
-      const row = await transaction.oneOrNone(
-        'INSERT INTO links (code, original_url) VALUES ($1, $2) ON CONFLICT (code) DO NOTHING RETURNING *',
-        [code, originalUrl],
-      );
-      if (row) return { item: link(row), created: true };
-      if (alias !== undefined) return { conflict: true };
-    }
-    throw new Error('Generated code attempts exhausted');
-  });
+    throw error;
+  } finally {
+    transaction.done();
+  }
+}
+
+// Виконує пошук і вставлення в межах одного з'єднання та транзакції.
+async function insertLink(transaction, originalUrl, alias, generateCode) {
+  await transaction.one('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [originalUrl]);
+  if (alias === undefined) {
+    const existing = await transaction.oneOrNone(
+      'SELECT * FROM links WHERE original_url = $1 ORDER BY created_at, id LIMIT 1', [originalUrl],
+    );
+    if (existing) return { item: link(existing), created: false };
+  }
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = alias ?? await generateCode();
+    const row = await transaction.oneOrNone(
+      'INSERT INTO links (code, original_url) VALUES ($1, $2) ON CONFLICT (code) DO NOTHING RETURNING *',
+      [code, originalUrl],
+    );
+    if (row) return { item: link(row), created: true };
+    if (alias !== undefined) return { conflict: true };
+  }
+  throw new Error('Generated code attempts exhausted');
 }
 
 // Одним SQL-запитом отримує сторінку і загальну кількість з одного MVCC-знімка.

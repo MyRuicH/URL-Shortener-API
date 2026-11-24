@@ -11,6 +11,7 @@
   "scripts": {
     "start": "node main.js",
     "dev": "node --watch main.js",
+    "test": "node scripts/verify.mjs",
     "check": "node --check main.js && node --check db.js && node --check healthcheck.js && node --check src/config.js",
     "lint:api": "redocly lint openapi.yaml"
   },
