@@ -4,6 +4,7 @@ services:
     init: true
     environment:
       NODE_ENV: ${NODE_ENV:-production}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
       HOST: ${HOST:?Set HOST in .env}
       PORT: ${PORT:?Set PORT in .env}
       POSTGRES_HOST: ${POSTGRES_HOST:?Set POSTGRES_HOST in .env}
@@ -17,7 +18,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "scripts/healthcheck.js"]
+      test: ["CMD", "node", "healthcheck.js"]
       interval: 5s
       timeout: 4s
       retries: 3

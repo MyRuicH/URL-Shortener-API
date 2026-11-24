@@ -45,7 +45,7 @@ export async function listLinks(limit, offset) {
     SELECT (SELECT count(*)::text FROM links) AS total,
            COALESCE(json_agg(page ORDER BY page.created_at DESC, page.id DESC)
                     FILTER (WHERE page.id IS NOT NULL), '[]') AS items
-    FROM (SELECT id::text, code, original_url, created_at, clicks::text
+    FROM (SELECT id, code, original_url, created_at, clicks::text
           FROM links ORDER BY created_at DESC, id DESC LIMIT $1 OFFSET $2) AS page`, [limit, offset]);
   // JSON з SQL містить дати як рядки; відновлюємо UTC-формат, як для інших відповідей.
   const items = [];
