@@ -1,12 +1,10 @@
 openapi: 3.0.3
 info:
   title: URL Shortener API
-  version: 0.2.0
+  version: 0.3.0
   description: |
-    Design-first contract for laboratory work 6. Link operations are designed
-    in part 2 and will be implemented in part 3. Only /health and Swagger UI
-    are implemented in the part 1 scaffold. Swagger UI at /docs/ reads this
-    file; its HTML and assets are outside the business API.
+    Design-first contract for laboratory work 6. Swagger UI at /docs/ reads
+    this file; its HTML and assets are outside the business API.
 
     All operations are public. Business responses use Cache-Control: no-store,
     including errors. JSON responses may include charset=utf-8. HEAD responses,
@@ -52,12 +50,15 @@ paths:
       operationId: createLink
       summary: Create a shortened link
       description: |
-        A repeated originalUrl creates an independent resource. An explicit
-        alias is case-sensitive and must be unique; an occupied alias returns
-        409 even for the same URL. Without alias the server generates 8 random
-        base64url characters using crypto.randomBytes(6). The UNIQUE constraint
-        resolves races. Generated-code collisions are retried up to 5 attempts,
-        then return 500. A new link has clicks="0". Location identifies its
+        Without alias, a repeated normalized originalUrl reuses the oldest
+        existing resource (created_at ASC, id ASC), returning 200 and Location.
+        An explicit alias is case-sensitive and must be unique; an occupied
+        alias returns 409 even for the same URL. A free explicit alias creates
+        an independent resource. Otherwise the server generates 8 random Base62
+        characters (A-Z, a-z, 0-9) using node:crypto. The UNIQUE constraint
+        resolves code races; same-URL creation is serialized in PostgreSQL.
+        Generated-code collisions are retried up to 5 attempts, then return
+        500. A new link has clicks="0". Location identifies its
         metadata resource; shortUrl contains the redirect URL.
       requestBody:
         required: true
@@ -76,6 +77,21 @@ paths:
                   originalUrl: https://example.org/articles/express
                   alias: express6
       responses:
+        '200':
+          description: Existing link reused; preserves createdAt and clicks
+          headers:
+            Location:
+              description: Relative URI of the reused metadata resource
+              required: true
+              schema:
+                type: string
+                pattern: '^/api/links/[A-Za-z0-9_-]{4,32}$'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
         '201':
           description: Link created
           headers:
